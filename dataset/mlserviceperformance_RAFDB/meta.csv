@@ -1,0 +1,5 @@
+Index,MLaaS(API),Cost per 10k images,class number
+0,Google,15,7
+1,FacePP,5,7
+2,Microsoft,10,7
+100,GitHub(CNN),0.001,7

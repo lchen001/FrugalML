@@ -1,0 +1,5 @@
+Index,MLaaS(API),Cost per 10k texts,label number
+0,Google,2.5,2
+3,Baidu,3.5,2
+4,Amazon,0.75,2
+100,GitHub(Bixin),0.001,2

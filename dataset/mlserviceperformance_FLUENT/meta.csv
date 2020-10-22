@@ -1,0 +1,5 @@
+Index,MLaaS(API),Cost per 10k utterance,label number
+0,Google,60,31
+2,Microsoft,41,31
+5,IBM,25,31
+101,GitHub(DeepSpeech),0.02,31
