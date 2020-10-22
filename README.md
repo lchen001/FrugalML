@@ -16,7 +16,7 @@ Besides using FrugalML for all provided datasets, it also shows how to use and e
 
 ## Table of Contents
 
-- [What is FrugalML?](#What-is-FrugalML?)
+- [What is FrugalML?](#What-is-FrugalML)
 - [Installation](#Installation)
 - [Usage](#Usage)
 	- [Generate strategy given a budget](#Generate-strategy-given-a-budget)
