@@ -144,11 +144,11 @@ def main():
     MyStrategy.loadtestdata(testpath='../dataset/mlserviceperformance_RAFDB')
     MyStrategy.loadstrategy(strategypath='../output/RAFDB_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_policy.txt',
                             budgetpath='../output/RAFDB_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_budget.txt')
-    MyStrategy.setbudget(3)
+    MyStrategy.setbudget(10)
     print( 'base API is', MyStrategy.getbaseid())
     base_pred = dict()
     base_pred['label'] = 1
-    base_pred['confidence'] = 0.1
+    base_pred['confidence'] = 0.9
     print('decision is', MyStrategy.getdecision(base_pred))
 
     return 0

@@ -391,7 +391,7 @@ class MLModels():
                     continue
                 #if(conf>q):
                 if (conf>q or (conf==q and useML>=useML_bound)):
-                    correct += int(prediction==truelabel)                    
+                    correct += self.reward[baseindex][i]                    
                 else:
                     useML+=1
                     #print('use not base')
@@ -403,7 +403,7 @@ class MLModels():
                         #print('prob_call',prob_call)
                         #print('j',j)
                         #print('pred, label',prediction_new,(truelabel))
-                        correct += prob_call*(int(prediction_new==truelabel))
+                        correct += prob_call*(self.reward[model][i])
                 total += 1
             #print('mlmodels correct','total',correct,total)
             if(total == 0):
