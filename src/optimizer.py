@@ -51,7 +51,6 @@ class OptimizerFrugalML(OptimizerTemplate):
                  test_eval = True,
                  randseed = 100,
                  method='FrugalML',
-                 disable_two_model=True,
                  baseid=100):       
         self.datapath = datapath
         self.split = split
@@ -64,7 +63,6 @@ class OptimizerFrugalML(OptimizerTemplate):
                               0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1]
         self.method = method
         self.baseid = int(baseid)
-        self.disable_two_model = disable_two_model
         
     def solve(self):
         ''' generate the optimal strategy via FrugalML training algorithm. '''
@@ -714,6 +712,7 @@ class optimizer_linear_offline_autobase(object):
                  split = True,
                  train_ratio = 0.5,
                  randseed=0,
+                 disable_two_model=True,
                  test_eval=True):
         self.myinf = 1e9
         self.optimizer_linear_list = list()
@@ -723,6 +722,7 @@ class optimizer_linear_offline_autobase(object):
         budget_list = np.arange(0,budget_num)*max(cost_vector_all)*2/(budget_num-1)
         self.budget_list = np.sort(np.append(budget_list,budget) )
         #print('budgetlist',self.budget_list)
+        self.disable_two_model = disable_two_model
         
         for i in range(len(cost_vector_all)):
             base_id = model_id_all[i]
