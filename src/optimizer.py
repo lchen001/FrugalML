@@ -24,7 +24,7 @@ from scipy.interpolate import UnivariateSpline
 from datasplit import data_split
 import multiprocessing
 import csv
-
+from strategy import Strategy
 
 class OptimizerTemplate(object):
     def __init__(self):
@@ -723,7 +723,16 @@ class optimizer_linear_offline_autobase(object):
         self.budget_list = np.sort(np.append(budget_list,budget) )
         #print('budgetlist',self.budget_list)
         self.disable_two_model = disable_two_model
-        
+        self.datapath = datapath
+        self.split = split
+        self.MyStrategy = Strategy()
+        if(split==True):
+            path000 = datapath+'/train/'
+        else:
+            path000 = datapath		
+        self.MyStrategy.loadtestdata(testpath=path000,
+                                metapath=datapath+'/meta.csv')		
+   
         for i in range(len(cost_vector_all)):
             base_id = model_id_all[i]
             cost_vector = cost_vector_all[:i] + cost_vector_all[i+1:]
@@ -784,7 +793,11 @@ class optimizer_linear_offline_autobase(object):
         #print('best one model and the base id',result1)
         result2 = self.best_two_base()
         #print('best two models',result2)
-        if(result1[1]>=result2[1]):
+		
+        a1,c1 = self.MyStrategy.evalperformance(s=result1)
+        a2,c2 = self.MyStrategy.evalperformance(s=result2)
+        #print('eval between one model and two model',a1,c1,a2,c2)
+        if(a1>a2):
             return result1
         else:
             return result2

@@ -67,9 +67,24 @@ class Strategy(object):
     def savestrategy(self, strategypath):
         raise NotImplementedError # TODO
 
-    def evalperformance(self):
-        policyid = self.policyid
-        s = self.strategy[policyid]
+    def evalperformance(self,s=None):
+        if(s==None):    
+            policyid = self.policyid
+            s = self.strategy[policyid]
+        if(s[4]=='one_model'):
+            baseindex = s[3] # base service index
+            self.baseid = self.indexIDDict[baseindex]
+            self.onemodel=True
+        else:
+            print('model approach is',s)
+            print('base', s[6],s[7])
+            self.baseid1 = self.indexIDDict[s[6]]
+            self.baseid2 = self.indexIDDict[s[7]]
+            self.baseid1prob = s[2]
+            self.baseid2prob = s[3]
+            self.baseindex = [s[6], s[7]]
+            self.onemodel = False    
+            
         avg_acc = 0
         avg_cost = 0
         print('model is',s)
@@ -139,12 +154,15 @@ class Strategy(object):
             #raise NotImplementedError # TODO
         return 0, 0
         
-    def loadtestdata(self, testpath):
+    def loadtestdata(self, testpath,metapath=None):
         path1 = testpath+'/Model'
         path3 = '_PredictedLabel.txt'
         path5 = '_Reward.txt'
         path7 = '_Confidence.txt'
-        loadpath = testpath+'/meta.csv'
+        if(metapath==None):
+            loadpath = testpath+'/meta.csv'
+        else:
+            loadpath = metapath
         metainfo = pd.read_csv(loadpath)
         self.indexIDDict = dict()
         for i in range(len(metainfo)):
@@ -192,10 +210,11 @@ class Strategy(object):
 
 def main():
     MyStrategy = Strategy()
-    MyStrategy.loadtestdata(testpath='../dataset/mlserviceperformance_CONLL_single')
+    MyStrategy.loadtestdata(testpath='../dataset/mlserviceperformance_CONLL_single/',
+                            metapath='../dataset/mlserviceperformance_CONLL_single/meta.csv')
     MyStrategy.loadstrategy(strategypath='../output/CONLL_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_policy.txt',
                             budgetpath='../output/CONLl_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_budget.txt')
-    MyStrategy.setbudget(30)
+    MyStrategy.setbudget(28)
     print( 'base API is', MyStrategy.getbaseid())
     base_pred = dict()
     base_pred['label'] = 1
