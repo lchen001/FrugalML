@@ -712,7 +712,7 @@ class optimizer_linear_offline_autobase(object):
                  split = True,
                  train_ratio = 0.5,
                  randseed=0,
-                 disable_two_model=True,
+                 disable_two_model=False,
                  test_eval=True):
         self.myinf = 1e9
         self.optimizer_linear_list = list()

@@ -52,9 +52,17 @@ class Strategy(object):
         if(s[4]=='one_model'):
             baseindex = s[3] # base service index
             self.baseid = self.indexIDDict[baseindex]
+            self.onemodel=True
         else:
             print('model approach is',s)
-            raise NotImplementedError # TODO
+            print('base', s[6],s[7])
+            self.baseid1 = self.indexIDDict[s[6]]
+            self.baseid2 = self.indexIDDict[s[7]]
+            self.baseid1prob = s[2]
+            self.baseid2prob = s[3]
+            self.baseindex = [s[6], s[7]]
+            self.onemodel = False
+            #raise NotImplementedError # TODO
 
     def savestrategy(self, strategypath):
         raise NotImplementedError # TODO
@@ -69,6 +77,7 @@ class Strategy(object):
             baseindex = s[3] # base service index
             baseID = self.indexIDDict[baseindex]
             self.baseid = baseID
+            print('cost is',self.MLAPIsoutput[baseID]['cost'])        
             for i in range(self.num_test):
                 avg_cost += self.MLAPIsoutput[baseID]['cost']
                 baseconf = self.MLAPIsoutput[baseID]['confidence'][i]
@@ -93,7 +102,41 @@ class Strategy(object):
             avg_acc /= self.num_test
             return avg_acc, avg_cost
         else:
-            raise NotImplementedError # TODO
+            baseID1 = self.baseid1 # base service index
+            baseID2 = self.baseid2
+            print('cost is',self.MLAPIsoutput[baseID1]['cost'])        
+            for i in range(self.num_test):
+                distbase = [self.baseid1prob,self.baseid2prob]
+                baseindex1 = np.random.choice(np.arange(0,0+len(distbase)),p=distbase)
+                #print('dist base and baseindex', distbase, baseindex)
+                if(baseindex1==0):
+                    baseID = baseID1
+                else:
+                    baseID = baseID2
+                avg_cost += self.MLAPIsoutput[baseID]['cost']
+                baseconf = self.MLAPIsoutput[baseID]['confidence'][i]
+                baselabel = int(self.MLAPIsoutput[baseID]['predlabel'][i])
+                basereward = self.MLAPIsoutput[baseID]['reward'][i]
+                #print('strategy', s[0][baseindex][0][baselabel][2])
+                thres = s[0][baseindex1][0][baselabel][2] # the confidence threshold
+                if(thres<baseconf):
+                    avg_acc += basereward
+                else:
+                    dist = s[0][baseindex1][0][baselabel][0]
+                    dist = [ (j>0) * j for j in dist ]
+                    #print('prob is', dist)
+                    addonindex = np.random.choice(np.arange(0,0+len(dist)),p=dist)
+                    if(addonindex>=self.baseindex[baseindex1]):
+                        addonindex += 1
+                    addonID = self.indexIDDict[addonindex]
+                    #print('add-on id is',addonID)
+                    #print('add on id',addonID)
+                    avg_acc += self.MLAPIsoutput[addonID]['reward'][i]
+                    avg_cost += self.MLAPIsoutput[addonID]['cost']
+            avg_cost /= self.num_test
+            avg_acc /= self.num_test
+            return avg_acc, avg_cost            
+            #raise NotImplementedError # TODO
         return 0, 0
         
     def loadtestdata(self, testpath):
@@ -121,7 +164,10 @@ class Strategy(object):
         return 0
     
     def getbaseid(self):
-        return self.baseid
+        if(self.onemodel):
+            return self.baseid
+        else:
+            return self.baseid1, self.baseid2
 
     def getdecision(self,base_pred):
         decision = dict()
@@ -149,7 +195,7 @@ def main():
     MyStrategy.loadtestdata(testpath='../dataset/mlserviceperformance_CONLL_single')
     MyStrategy.loadstrategy(strategypath='../output/CONLL_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_policy.txt',
                             budgetpath='../output/CONLl_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_budget.txt')
-    MyStrategy.setbudget(29)
+    MyStrategy.setbudget(30)
     print( 'base API is', MyStrategy.getbaseid())
     base_pred = dict()
     base_pred['label'] = 1
