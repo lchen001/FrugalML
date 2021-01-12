@@ -25,6 +25,7 @@ class Strategy(object):
         self.strategy = list()
         self.num_test = 0
         self.num_train = 0
+        self.eps = 1e-9        
     def trainstrategy(self):
         raise NotImplementedError # TODO
     
@@ -54,8 +55,8 @@ class Strategy(object):
             self.baseid = self.indexIDDict[baseindex]
             self.onemodel=True
         else:
-            print('model approach is',s)
-            print('base', s[6],s[7])
+            #print('model approach is',s)
+            #print('base', s[6],s[7])
             self.baseid1 = self.indexIDDict[s[6]]
             self.baseid2 = self.indexIDDict[s[7]]
             self.baseid1prob = s[2]
@@ -73,37 +74,45 @@ class Strategy(object):
             s = self.strategy[policyid]
         if(s[4]=='one_model'):
             baseindex = s[3] # base service index
+            if(baseindex<0):
+                return 0,0
             self.baseid = self.indexIDDict[baseindex]
             self.onemodel=True
+
         else:
-            print('model approach is',s)
-            print('base', s[6],s[7])
+            #print('model approach is',s)
+            #print('base', s[6],s[7])
+            if(s[6]<0 or s[7]<0):
+                return 0, 0            
             self.baseid1 = self.indexIDDict[s[6]]
             self.baseid2 = self.indexIDDict[s[7]]
             self.baseid1prob = s[2]
             self.baseid2prob = s[3]
             self.baseindex = [s[6], s[7]]
             self.onemodel = False    
+
             
         avg_acc = 0
         avg_cost = 0
-        print('model is',s)
+        #print('model is',s)
         if(s[4]=='one_model'): # Always use one model as the base
             baseindex = s[3] # base service index
             baseID = self.indexIDDict[baseindex]
             self.baseid = baseID
-            print('cost is',self.MLAPIsoutput[baseID]['cost'])        
+            #print('cost is',self.MLAPIsoutput[baseID]['cost'])        
             for i in range(self.num_test):
                 avg_cost += self.MLAPIsoutput[baseID]['cost']
                 baseconf = self.MLAPIsoutput[baseID]['confidence'][i]
                 baselabel = int(self.MLAPIsoutput[baseID]['predlabel'][i])
                 basereward = self.MLAPIsoutput[baseID]['reward'][i]
                 thres = s[0][baselabel][2] # the confidence threshold
-                if(thres<baseconf):
+                dist = s[0][baselabel][0]
+                dist = [ (j>0) * j for j in dist ]
+                
+                if(thres<baseconf or sum(dist)<=self.eps):
                     avg_acc += basereward
                 else:
-                    dist = s[0][baselabel][0]
-                    dist = [ (j>0) * j for j in dist ]
+                    dist = dist/sum(dist)
                     #print('prob is', dist)
                     addonindex = np.random.choice(np.arange(0,0+len(dist)),p=dist)
                     if(addonindex>=baseindex):
@@ -119,7 +128,7 @@ class Strategy(object):
         else:
             baseID1 = self.baseid1 # base service index
             baseID2 = self.baseid2
-            print('cost is',self.MLAPIsoutput[baseID1]['cost'])        
+            #print('cost is',self.MLAPIsoutput[baseID1]['cost'])        
             for i in range(self.num_test):
                 distbase = [self.baseid1prob,self.baseid2prob]
                 baseindex1 = np.random.choice(np.arange(0,0+len(distbase)),p=distbase)
@@ -134,11 +143,14 @@ class Strategy(object):
                 basereward = self.MLAPIsoutput[baseID]['reward'][i]
                 #print('strategy', s[0][baseindex][0][baselabel][2])
                 thres = s[0][baseindex1][0][baselabel][2] # the confidence threshold
-                if(thres<baseconf):
+                dist = s[0][baseindex1][0][baselabel][0]
+                dist = [ (j>0) * j for j in dist ]
+
+                if(thres<baseconf or sum(dist)<=self.eps):
                     avg_acc += basereward
                 else:
-                    dist = s[0][baseindex1][0][baselabel][0]
-                    dist = [ (j>0) * j for j in dist ]
+                    #print(dist)
+                    dist = dist/sum(dist)
                     #print('prob is', dist)
                     addonindex = np.random.choice(np.arange(0,0+len(dist)),p=dist)
                     if(addonindex>=self.baseindex[baseindex1]):
@@ -210,11 +222,11 @@ class Strategy(object):
 
 def main():
     MyStrategy = Strategy()
-    MyStrategy.loadtestdata(testpath='../dataset/mlserviceperformance_CONLL_single/',
-                            metapath='../dataset/mlserviceperformance_CONLL_single/meta.csv')
-    MyStrategy.loadstrategy(strategypath='../output/CONLL_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_policy.txt',
-                            budgetpath='../output/CONLl_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_budget.txt')
-    MyStrategy.setbudget(28)
+    MyStrategy.loadtestdata(testpath='../dataset/mlserviceperformance_MTWI_single/',
+                            metapath='../dataset/mlserviceperformance_MTWI_single/meta.csv')
+    MyStrategy.loadstrategy(strategypath='../output/MTWI_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_policy.txt',
+                            budgetpath='../output/MTWI_split_True_trainratio_0.5_randseed_1_testeval_True_optname_FrugalML_budget.txt')
+    MyStrategy.setbudget(5.002)
     print( 'base API is', MyStrategy.getbaseid())
     base_pred = dict()
     base_pred['label'] = 1
